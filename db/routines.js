@@ -60,14 +60,14 @@ async function getAllRoutines() {
   }
 
 }
-
-async function getAllPublicRoutines(isPublic) {
+//isPublic was in parentheses (originally?)
+async function getAllPublicRoutines() {
   try {
     const { rows: routines } = await client.query(`
     SELECT routines.* , user.username AS "creatorName"
     FROM routines
     JOIN users ON routines
-    WHERE isPublic = true 
+    WHERE "isPublic" = true 
     `)
     //check if boolean works
     //are we passing in?

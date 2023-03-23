@@ -19,10 +19,10 @@ async function createUser({ username, password }) {
   }
 }
 
-//THIS NEEDS TO BE SOLVED 23 MAR
+
 async function getUser({ username, password }) {
   try{
-    const user = await getUserByUserName(username);
+    const user = await getUserByUsername(username);
     const hashedPassword = user.password;
     const isValid = await bcrypt.compare(password, hashedPassword)
     if(!isValid){
