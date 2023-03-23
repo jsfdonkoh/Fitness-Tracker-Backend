@@ -8,17 +8,18 @@ async function createUser({ username, password }) {
   const hashedPassword = await bcrypt.hash(password, SALT_COUNT)  
   try {
     const { rows: [ user ] } = await client.query(` 
-    INSERT INTO user(username, password)
-    VALUES($1,$2)
-    on CONFLICT (username) DO NOTHING
-    RETURNING *
-    `[username,hashedPassword])
-    return user
+    INSERT INTO users(username, password)
+    VALUES($1, $2)
+    ON CONFLICT (username) DO NOTHING
+    RETURNING id, username;
+    `,[username, hashedPassword])
+    return user;
   } catch(error){
     console.log("Error creating user")
   }
 }
 
+//THIS NEEDS TO BE SOLVED 23 MAR
 async function getUser({ username, password }) {
   try{
     const user = await getUserByUserName(username);
@@ -27,6 +28,7 @@ async function getUser({ username, password }) {
     if(!isValid){
       return null;
      }else{
+      delete user.password
       return user
      }
   } catch(error){
@@ -53,13 +55,13 @@ if (!user){
  }
 }
 
-async function getUserByUsername(userName) {
+async function getUserByUsername(username) {
 try {
   const { rows: [ user ] } = await client.query(`
   SELECT *
   FROM users
-  WHERE userName = ${userName}
-  `)
+  WHERE username=$1
+  `,[username])
   return user; 
 } catch(error){
   console.log("Error getting user by username")
