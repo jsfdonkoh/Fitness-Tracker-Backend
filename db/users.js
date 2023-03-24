@@ -5,7 +5,9 @@ const bcrypt = require('bcrypt');
 // user functions
 async function createUser({ username, password }) {
   const SALT_COUNT = 10;
-  const hashedPassword = await bcrypt.hash(password, SALT_COUNT)  
+  const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
+  //let usertoAdd = {username, hashedPassword}
+  //do we need to do anything with this?
   try {
     const { rows: [ user ] } = await client.query(` 
     INSERT INTO users(username, password)

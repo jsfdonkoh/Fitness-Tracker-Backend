@@ -1,13 +1,14 @@
 const client = require("./client");
+const {attachActivitiesToRoutines} = require("./activities");
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
   try {
     const { rows: [ routine ] } = await client.query(`
-    INSERT into routines("creatorId", "isPublic", name, goal)
+    INSERT INTO routines("creatorId", "isPublic", "name", "goal")
     VALUES ($1, $2, $3, $4)
     ON CONFLICT (name) DO NOTHING
-    RETURNING *
-    `[creatorId, isPublic, name, goal])
+    RETURNING *;
+    `,[creatorId, isPublic, name, goal]);
     return routine
   } catch(error){
     console.log("Error creating routine")
@@ -44,17 +45,24 @@ async function getRoutinesWithoutActivities() {
 async function getAllRoutines() {
   try {
     const { rows: routines } = await client.query(`
-    SELECT routines.*, user.username AS "creatorName"
+    SELECT routines.*, users.username AS "creatorName"
     FROM routines
     JOIN users ON routines."creatorId" = users.id
     `)
-    
+     for(let routine of routines)
+     {console.log("hello")
+     console.log("routine", routine)
+     console.log("routine.activity", routine.activity)
+     console.log("routine.activities", routine.activities)
+   }
+  //console.log("routines",routines)
     //xit("includes username, from users join, aliased as creatorName", async () => {
-    return routines
+    return (routines)
     //return routines.activities
     //how do we return all routines + their activities?
     //if change is made to return array make it here as well
     //build out routine activites so we have method to call activities - add activities to routine object 
+    //need to join from a few dif tables to get act that correlate w a rroutine (many to many r'ship - solution have a middle ground table routineactivities is middle ground table - putting id's from diff tables in it)
   } catch(error){
     console.log("Error getting all routines")
   }

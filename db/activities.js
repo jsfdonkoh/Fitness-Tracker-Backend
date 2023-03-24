@@ -1,4 +1,4 @@
-const id = require('faker/lib/locales/id_ID');
+//const id = require('faker/lib/locales/id_ID');
 const client = require('./client');
 
 // database functions
@@ -61,7 +61,39 @@ async function getActivityByName(name) {
 }
 
 // used as a helper inside db/routines.js
-async function attachActivitiesToRoutines(routines) {}
+//async function attachActivitiesToRoutines(routines) {}
+async function attachActivitiesToRoutines (routines) {
+  const routinesById = {};
+  routines.forEach((routine) => {
+    if (!routinesById[routine.id]) {
+      routinesById[routine.id] = {
+        id: routine.id,
+        creatorId: routine.creatorId,
+        isPublic: routine.isPublic,
+        name: routine.name,
+        goal: routine.goal,
+        activities: [],
+      };
+    }
+    // const activity = {
+    //   name: routine.activityName,
+    //   id: routine.activityId,
+    //   description: routine.description,
+    //   count: routine.count,
+    //   duration: routine.duration,
+    const activity = {
+      name: activity.name,
+      id: activity.id,
+      description: activity.description,
+      count: activity.count,
+      duration: activity.duration,
+    };
+    routinesById[routine.id].activities.push(activity);
+  });
+
+  return routinesById;
+}
+
 
 async function updateActivity({ id, ...fields }) {
   // don't try to update the id

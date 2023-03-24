@@ -12,7 +12,7 @@ async function addActivityToRoutine({
     VALUES($1,$2,$3,$4)
     on CONFLICT ("routineId", "activityId") DO NOTHING
     RETURNING *
-    `[routineId,activityId,count, duration])
+    `,[routineId,activityId,count, duration])
     return routine_activity
   } catch(error){
     console.log("Error adding activity to routine")
