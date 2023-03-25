@@ -63,18 +63,34 @@ async function getActivityByName(name) {
 // used as a helper inside db/routines.js
 //async function attachActivitiesToRoutines(routines) {}
 async function attachActivitiesToRoutines (routines) {
-  const routinesById = {};
-  routines.forEach((routine) => {
-    if (!routinesById[routine.id]) {
-      routinesById[routine.id] = {
-        id: routine.id,
-        creatorId: routine.creatorId,
-        isPublic: routine.isPublic,
-        name: routine.name,
-        goal: routine.goal,
-        activities: [],
-      };
+  const routinesById = [...routines];
+  const paramList = routines.map ((r, idx) => `$${idx+1}`).join(', ')
+  const routineList = routines.map (routine => routine.id)
+  if (!routineList?.length) return []
+  // routines.forEach((routine) => {
+  //   if (!routinesById[routine.id]) {
+  //     routinesById[routine.id] = {
+  //       id: routine.id,
+  //       creatorId: routine.creatorId,
+  //       isPublic: routine.isPublic,
+  //       name: routine.name,
+  //       goal: routine.goal,
+  //       activities: [],
+  //     };
+  //   }
+    try {
+      const { rows: activites } = await client.query(`
+      SELECT activities.*, routine_activities.duration, routine_activities.count, routine_activities.id AS "routineActivityId", routine_activities."routineId"
+      FROM activities
+      JOIN routine_activities ON routine_activities."activityId" = activities.id
+      WHERE routine_activities."routineId" IN (${paramList})
+      `,routineList)
+      return ..
+    } catch(error){
+      console.log("")
     }
+//
+
     // const activity = {
     //   name: routine.activityName,
     //   id: routine.activityId,
@@ -90,7 +106,15 @@ async function attachActivitiesToRoutines (routines) {
     };
     routinesById[routine.id].activities.push(activity);
   });
-
+//   const activity = {
+//     name: activity.name,
+//     id: activity.id,
+//     description: activity.description,
+//     count: activity.count,
+//     duration: activity.duration,
+//   };
+//   routinesById[routine.id].activities.push(activity);
+// });
   return routinesById;
 }
 

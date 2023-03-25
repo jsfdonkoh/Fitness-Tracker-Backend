@@ -84,6 +84,33 @@ try {
 });
 // GET /api/users/me
 
+usersRouter.get('/', async (req, res) => {
+    try {
+ 
+     const users = await getAllUsers();
+ 
+     res.send({
+       users
+     });
+    } catch (error){
+     console.log(error)
+    }
+ 
+ });
+
 // GET /api/users/:username/routines
 
+usersRouter.get('/', async (req, res) => {
+    try {
+ 
+     const users = await getAllUsers();
+ 
+     res.send({
+       users
+     });
+    } catch (error){
+     console.log(error)
+    }
+ 
+ });
 module.exports = router;

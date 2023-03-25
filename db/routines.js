@@ -57,7 +57,9 @@ async function getAllRoutines() {
    }
   //console.log("routines",routines)
     //xit("includes username, from users join, aliased as creatorName", async () => {
-    return (routines)
+    const result = attachActivitiesToRoutines(routines)
+    console.log("result", result)
+    return result
     //return routines.activities
     //how do we return all routines + their activities?
     //if change is made to return array make it here as well
