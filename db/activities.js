@@ -79,13 +79,17 @@ async function attachActivitiesToRoutines (routines) {
   //     };
   //   }
     try {
-      const { rows: activites } = await client.query(`
+      const { rows: activities } = await client.query(`
       SELECT activities.*, routine_activities.duration, routine_activities.count, routine_activities.id AS "routineActivityId", routine_activities."routineId"
       FROM activities
       JOIN routine_activities ON routine_activities."activityId" = activities.id
       WHERE routine_activities."routineId" IN (${paramList})
       `,routineList)
-      return ..
+      for (const routine of routinesById){
+        const activitiesToAdd = activities.filter(activity => activity.routineId === routine.id);
+        routine.activities = activitiesToAdd;
+      }
+      return routinesById;
     } catch(error){
       console.log("")
     }
@@ -97,15 +101,15 @@ async function attachActivitiesToRoutines (routines) {
     //   description: routine.description,
     //   count: routine.count,
     //   duration: routine.duration,
-    const activity = {
-      name: activity.name,
-      id: activity.id,
-      description: activity.description,
-      count: activity.count,
-      duration: activity.duration,
-    };
-    routinesById[routine.id].activities.push(activity);
-  });
+  //   const activity = {
+  //     name: activity.name,
+  //     id: activity.id,
+  //     description: activity.description,
+  //     count: activity.count,
+  //     duration: activity.duration,
+  //   };
+  //   routinesById[routine.id].activities.push(activity);
+  // };
 //   const activity = {
 //     name: activity.name,
 //     id: activity.id,
@@ -115,7 +119,7 @@ async function attachActivitiesToRoutines (routines) {
 //   };
 //   routinesById[routine.id].activities.push(activity);
 // });
-  return routinesById;
+  //return routinesById;
 }
 
 
