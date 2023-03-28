@@ -6,10 +6,11 @@ const bcrypt = require('bcrypt');
 //jwt pulled from juicebox
 const jwt = require('jsonwebtoken');
 const { 
-    //getAllUsers, 
+    getAllUsers, 
     getUserByUsername, 
     createUser 
 } = require('../db');
+
 // POST /api/users/register
 //pulled in this from Juicebox API Register
 usersRouter.post('/register', async (req, res, next) => {
@@ -84,10 +85,10 @@ try {
 });
 // GET /api/users/me
 
-usersRouter.get('/', async (req, res) => {
+usersRouter.get('/users/me', async (req, res) => {
     try {
- 
-     const users = await getAllUsers();
+     const token = jwt.sign({id: user.id, username: username}, process.env.JWT_SECRET);
+     const users = await getAllUsers(token);
  
      res.send({
        users

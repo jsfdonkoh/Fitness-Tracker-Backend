@@ -35,11 +35,11 @@ async function getRoutineActivityById(id) {
 
 async function getRoutineActivitiesByRoutine({ id }) {
   try {
-    const { rows: [ routine_activity ] } = await client.query(`
+    const { rows:  routine_activity  } = await client.query(`
     SELECT *
     FROM routine_activities 
-    WHERE "routineId" = ${id}
-    `)
+    WHERE "routineId"=$1
+    `,[id])
     return routine_activity
   } catch(error){
     console.log("Error getting routine activities by routine")
@@ -82,18 +82,26 @@ async function destroyRoutineActivity(id) {
 
 async function canEditRoutineActivity(routineActivityId, userId) {
   try {
-    const { rows: [ routine_activities ] } = await client.query(`
-    SELECT r.*, ra.* FROM routines 
-    as r 
-    JOIN routine_activities as ra 
-    ON r.Id = ra."routineId"
-    WHERE r."creatorId" = ${userId} AND ra."routineId" = ${routineActivityId}
-    `)
-
-    if(routine_activities) return true;
-    return false;
-  } catch(error){
-    console.log("")
+    const {rows: [routineFromRoutineActivity]} = await client.query(`
+    SELECT * FROM routine_activities
+    JOIN routines ON routine_activities."routineId" = routines.id
+    AND routine_activities.id = $1
+  `, [routineActivityId]);
+  return routineFromRoutineActivity.creatorId === userId;
+}
+    // const { rows: [ routine_activities ] } = await client.query(`
+    // SELECT r.*, ra.* FROM routines 
+    // as r
+    // JOIN routine_activities as ra
+    // ON r.Id = ra."routineId"
+    // WHERE r."creatorId" = ${userId} 
+    // AND ra."routineId" = ${routineActivityId}
+    // `)
+    // console.log("routine_activities", routine_activities)
+    // if(routine_activities) return true;
+    // return false;
+   catch(error){
+    console.log("Can edit routine activity")
   }
 }
 //create select that joins routine and routine activity tables; filter that's based on routine activity id that is passed in (can do creator id too) 
@@ -105,4 +113,4 @@ module.exports = {
   updateRoutineActivity,
   destroyRoutineActivity,
   canEditRoutineActivity,
-};
+}

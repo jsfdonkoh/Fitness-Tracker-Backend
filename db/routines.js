@@ -74,15 +74,17 @@ async function getAllRoutines() {
 async function getAllPublicRoutines() {
   try {
     const { rows: routines } = await client.query(`
-    SELECT routines.* , user.username AS "creatorName"
+    SELECT routines.* , users.username AS "creatorName"
     FROM routines
-    JOIN users ON routines
+    JOIN users ON routines."creatorId" = users.id
     WHERE "isPublic" = true 
     `)
     //check if boolean works
     //are we passing in?
     //xit("includes username, from users join, aliased as creatorName"
-    return routines 
+    const result = attachActivitiesToRoutines(routines)
+    console.log("result", result)
+    return result
   } catch(error){
     console.log("Get all public routines")
   }
@@ -91,19 +93,57 @@ async function getAllPublicRoutines() {
 async function getAllRoutinesByUser({ username }) {
   try {
     const { rows: routines } = await client.query(`
-    SELECT routines.*, user.username AS "creatorName"
+    SELECT routines.*, users.username AS "creatorName"
     FROM routines 
-    JOIN 
-    `)
-    return routines
+    JOIN users ON routines."creatorId" = users.Id
+    WHERE username=$1
+    `,[username])
+    const result = attachActivitiesToRoutines(routines)
+    console.log("result", result)
+    return result
   } catch(error){
-    console.log("")
+    console.log("Get all routines by user")
   }
 }
 
-async function getPublicRoutinesByUser({ username }) {}
+async function getPublicRoutinesByUser({ username }) {
+  try {
+    const { rows: routines } = await client.query(`
+    SELECT routines.*, users.username AS "creatorName"
+    FROM routines 
+    JOIN users ON routines."creatorId" = users.Id
+    WHERE username=$1 
+    AND "isPublic" = true 
+    `,[username])
+    const result = attachActivitiesToRoutines(routines)
+    console.log("result", result)
+    return result
+  } catch(error){
+    console.log("Get all routines by user")
+  }
+}
 
-async function getPublicRoutinesByActivity({ id }) {}
+
+async function getPublicRoutinesByActivity({ id }) {
+  try {
+    const { rows: routines } = await client.query(`
+    SELECT routines.* , users.username AS "creatorName"
+    FROM routines
+    JOIN users ON routines."creatorId" = users.id
+    JOIN routine_activities ON routines.Id = routine_activities."routineId"
+    WHERE routines."isPublic" = true 
+    AND routine_activities."activityId"=$1
+    `,[id])
+    //check if boolean works
+    //are we passing in?
+    //xit("includes username, from users join, aliased as creatorName"
+    const result = attachActivitiesToRoutines(routines)
+    console.log("result", result)
+    return result
+  } catch(error){
+    console.log("Get all public routines by activity")
+  }
+}
 
 async function updateRoutine({ id, ...fields }) {
   const setString = Object.keys(fields).map(
