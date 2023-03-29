@@ -1,15 +1,17 @@
 /* eslint-disable no-useless-catch */
 const express = require("express");
-const router = express.Router();
-const usersRouter = require("/Users/zacharywilliams/UNIV_FitnessTrackr_Starter/api/users.js");
+const usersRouter = express.Router();
+//const usersRouter = require("/Users/zacharywilliams/UNIV_FitnessTrackr_Starter/api/users.js");
 const bcrypt = require('bcrypt');
 //jwt pulled from juicebox
 const jwt = require('jsonwebtoken');
+const {getPublicRoutinesByUser} = require ('../db/routines');
 const { 
     getAllUsers, 
     getUserByUsername, 
     createUser 
-} = require('../db');
+} = require('../db/users');
+
 
 // POST /api/users/register
 //pulled in this from Juicebox API Register
@@ -17,21 +19,27 @@ usersRouter.post('/register', async (req, res, next) => {
     const { username, password } = req.body;
     try {
     const _user = await getUserByUsername(username);
-    const SALT_COUNT = 10;
-    const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
+    //hash password is happening in db, doesn't need to be here
+    // const SALT_COUNT = 10;
+    // const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
+
+    //send a status below - res.status status code for errors (401 code = unauth error code)
       if (_user) {
         next({
           name: 'UserExistsError',
           message: 'A user by that username already exists'
         });
       }
-  
+    
+      //pass in username and password below (not hashed) 
       const user = await createUser({
-        username,
-        hashedPassword,
+        username, password
       });
-  
-      if (password.length < 8){
+    //check password before mess w/ db ln 35-38 to ln 28
+    //once we create user check if not user, return message that account was not created 
+    //save password, get token w/ jwt sign - will get token - res.send 
+      
+    if (password.length < 8){
         next({
             password: "Password must be 8 characters"
         });
@@ -85,13 +93,18 @@ try {
 });
 // GET /api/users/me
 
-usersRouter.get('/users/me', async (req, res) => {
+usersRouter.get('/users', async (req, res, next) => {
+    const { username } = req.params;
     try {
-     const token = jwt.sign({id: user.id, username: username}, process.env.JWT_SECRET);
-     const users = await getAllUsers(token);
- 
+     const token = jwt.sign({username}, process.env.JWT_SECRET);
+     const activeUser = await getAllUsers({token, username});
+     if (!token) {
+        next ({
+            message:"Invalid credentials"
+        })
+     } 
      res.send({
-       users
+       activeUser
      });
     } catch (error){
      console.log(error)
@@ -101,17 +114,22 @@ usersRouter.get('/users/me', async (req, res) => {
 
 // GET /api/users/:username/routines
 
-usersRouter.get('/', async (req, res) => {
+usersRouter.get('/:username/routines', async (req, res, next) => {
+   const { username } = req.params;
     try {
  
-     const users = await getAllUsers();
- 
+     const userRoutines = await getPublicRoutinesByUser(username);
+    if (!username){
+        next({
+            message:"No public routines for this user"
+        })
+    }
      res.send({
-       users
+       userRoutines
      });
     } catch (error){
      console.log(error)
     }
  
  });
-module.exports = router;
+module.exports = usersRouter;
