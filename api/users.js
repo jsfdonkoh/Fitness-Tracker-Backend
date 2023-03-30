@@ -11,7 +11,10 @@ const {
     getUserByUsername, 
     createUser 
 } = require('../db/users');
-
+const { request } = require("../app");
+require('dotenv').config();
+//reference jwt_secret here
+//const JWT_SECRET = "neverTell"
 
 // POST /api/users/register
 //pulled in this from Juicebox API Register
@@ -20,8 +23,8 @@ usersRouter.post('/register', async (req, res, next) => {
     try {
     const _user = await getUserByUsername(username);
     //hash password is happening in db, doesn't need to be here
-    // const SALT_COUNT = 10;
-    // const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
+    const SALT_COUNT = 10;
+    const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
 
     //send a status below - res.status status code for errors (401 code = unauth error code)
       if (_user) {
@@ -33,7 +36,7 @@ usersRouter.post('/register', async (req, res, next) => {
     
       //pass in username and password below (not hashed) 
       const user = await createUser({
-        username, password
+        username, hashedPassword
       });
     //check password before mess w/ db ln 35-38 to ln 28
     //once we create user check if not user, return message that account was not created 
@@ -48,7 +51,7 @@ usersRouter.post('/register', async (req, res, next) => {
       const token = jwt.sign({ 
         id: user.id, 
         username
-      }, process.env.JWT_SECRET, {
+      },process.env.JWT_SECRET, {
         expiresIn: '1w'
       });
   
@@ -63,8 +66,10 @@ usersRouter.post('/register', async (req, res, next) => {
 
 // POST /api/users/login
 usersRouter.post('/login', async (req, res, next) => {
-    const { username, password } = req.body;
-    // request must have both
+    console.log("Username & password", req.body);
+    const username = null;
+    const password  = null;
+    //request must have both
     if (!username || !password) {
       next({
         name: "MissingCredentialsError",
@@ -77,7 +82,8 @@ try {
     const SALT_COUNT = 10;
     const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
 
-    if (user && user.password == hashedPassword) {
+console.log("Password comparisons", hashedPassword, password);
+    if (user && bcrypt.compare (hashedPassword, password)) {
       const token = jwt.sign({id: user.id, username: username}, process.env.JWT_SECRET);
       res.send({ message: "you're logged in!", token});
     } else {
@@ -91,6 +97,7 @@ try {
     next(error);
   }
 });
+
 // GET /api/users/me
 
 usersRouter.get('/users', async (req, res, next) => {

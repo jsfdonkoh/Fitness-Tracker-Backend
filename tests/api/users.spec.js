@@ -140,6 +140,7 @@ describe("/api/users", () => {
         username: faker.internet.userName(),
         password: faker.internet.password(),
       };
+      
       // Create the user in the DB
       await createUser(userData);
       // Login the user
@@ -188,7 +189,7 @@ describe("/api/users", () => {
       const { body } = await request(app)
         .post("/api/users/login")
         .send(userData);
-
+console.log("Body2", body);
       expectNotToBeError(body);
 
       expect(body).toMatchObject({
