@@ -1,12 +1,13 @@
-require("dotenv").config()
 const express = require("express")
 const app = express()
-const router = require("./api")
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+require("dotenv").config()
+const router = require("./api")
+
 
 // parse application/json
-app.use(bodyParser.json());
 
 app.use ("/api", router)
 

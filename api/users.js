@@ -15,9 +15,15 @@ const { request } = require("../app");
 require('dotenv').config();
 //reference jwt_secret here
 //const JWT_SECRET = "neverTell"
-
+usersRouter.use((req, res, next) => {
+    console.log("A request is being made to /users");
+  
+    next();
+  });
 // POST /api/users/register
 //pulled in this from Juicebox API Register
+
+
 usersRouter.post('/register', async (req, res, next) => {
     const { username, password } = req.body;
     try {

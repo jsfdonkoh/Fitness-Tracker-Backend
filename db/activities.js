@@ -4,6 +4,7 @@ const client = require('./client');
 // database functions
 async function createActivity({ name, description }) {
   // return the new activity
+  console.log("name and description", name, description)
 try {
   const { rows: [ activity ]} = await client.query(`
   INSERT INTO activities(name, description)
@@ -25,6 +26,7 @@ try {
   SELECT *
   FROM activities
   `)
+  
   return activities;
 } catch (error) {
   console.log("Error getting AllActivities")
