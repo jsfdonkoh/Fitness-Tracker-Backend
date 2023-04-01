@@ -11,7 +11,7 @@ const {
     getUserByUsername, 
     createUser 
 } = require('../db/users');
-const { request } = require("../app");
+//const { request } = require("../app");
 require('dotenv').config();
 //reference jwt_secret here
 const JWT_SECRET = "neverTell"
@@ -34,10 +34,16 @@ usersRouter.post('/register', async (req, res, next) => {
     //const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
     //send a status below - res.status status code for errors (401 code = unauth error code)
       if (_user) {
-        next({
-          name: 'UserExistsError',
-          message: 'A user by that username already exists'
+        res.send({
+            error: 'error',
+            message: `User ${username} is already taken.`,
+            name: 'error'
         });
+    
+    //     next({
+    //       name: 'UserExistsError',
+    //       message: 'A user by that username already exists'
+    //  });
       } else if(password.length < 8){
         next({
             password: "Password must be 8 characters"
@@ -60,7 +66,7 @@ usersRouter.post('/register', async (req, res, next) => {
       });
 }
     
-      //pass in username and password below (not hashed) 
+    //pass in username and password below (not hashed) 
     //   const user = await createUser({
     //     username, password
     //   });
