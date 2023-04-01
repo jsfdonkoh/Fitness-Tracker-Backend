@@ -14,7 +14,7 @@ const {
 const { request } = require("../app");
 require('dotenv').config();
 //reference jwt_secret here
-//const JWT_SECRET = "neverTell"
+const JWT_SECRET = "neverTell"
 usersRouter.use((req, res, next) => {
     console.log("A request is being made to /users");
   
@@ -28,43 +28,46 @@ usersRouter.post('/register', async (req, res, next) => {
     const { username, password } = req.body;
     try {
     const _user = await getUserByUsername(username);
+    console.log("user7", _user)
     //hash password is happening in db, doesn't need to be here
-    const SALT_COUNT = 10;
-    const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
-
+    //const SALT_COUNT = 10;
+    //const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
     //send a status below - res.status status code for errors (401 code = unauth error code)
       if (_user) {
         next({
           name: 'UserExistsError',
           message: 'A user by that username already exists'
         });
-      }
-    
-      //pass in username and password below (not hashed) 
-      const user = await createUser({
-        username, hashedPassword
-      });
-    //check password before mess w/ db ln 35-38 to ln 28
-    //once we create user check if not user, return message that account was not created 
-    //save password, get token w/ jwt sign - will get token - res.send 
-      
-    if (password.length < 8){
+      } else if(password.length < 8){
         next({
             password: "Password must be 8 characters"
         });
-      }
-      //are we using this token?
-      const token = jwt.sign({ 
+      } else {
+        const user = await createUser({
+        username, password
+    });
+    const token = jwt.sign({ 
         id: user.id, 
         username
-      },process.env.JWT_SECRET, {
+      },JWT_SECRET, {
         expiresIn: '1w'
       });
   
       res.send({ 
         message: "thank you for signing up",
-        token 
+        token, 
+        user
       });
+}
+    
+      //pass in username and password below (not hashed) 
+    //   const user = await createUser({
+    //     username, password
+    //   });
+    //check password before mess w/ db ln 35-38 to ln 28
+    //once we create user check if not user, return message that account was not created 
+    //save password, get token w/ jwt sign - will get token - res.send 
+      
     } catch ({ name, message }) {
       next({ name, message })
     } 

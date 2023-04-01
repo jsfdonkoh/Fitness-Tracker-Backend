@@ -47,7 +47,7 @@ describe("/api/users", () => {
       const response = await request(app)
         .post("/api/users/register")
         .send(fakeUserData);
-
+//console.log("response3", response.body)
       expectNotToBeError(response.body);
 
       expect(response.body).toMatchObject({
@@ -97,7 +97,7 @@ describe("/api/users", () => {
       );
     });
 
-    it("Throws errors for duplicate username", async () => {
+    it.only("Throws errors for duplicate username", async () => {
       // Create a fake user in the DB
       const { fakeUser: firstUser } = await createFakeUserWithToken();
       // Now try to create a user with the same username
@@ -109,7 +109,7 @@ describe("/api/users", () => {
       const response = await request(app)
         .post("/api/users/register")
         .send(secondUserData);
-
+        console.log("response4", response.body)
       expectToBeError(response.body);
 
       expectToHaveErrorMessage(

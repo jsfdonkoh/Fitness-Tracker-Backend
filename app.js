@@ -5,6 +5,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 require("dotenv").config()
 const router = require("./api")
+//app.use(express.json());
 
 
 // parse application/json
