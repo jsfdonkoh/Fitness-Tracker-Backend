@@ -2,12 +2,12 @@
 const express = require("express");
 const usersRouter = express.Router();
 //const usersRouter = require("/Users/zacharywilliams/UNIV_FitnessTrackr_Starter/api/users.js");
-const bcrypt = require('bcrypt');
+//const bcrypt = require('bcrypt');
 //jwt pulled from juicebox
 const jwt = require('jsonwebtoken');
 const {getPublicRoutinesByUser} = require ('../db/routines');
 const { 
-    getAllUsers, 
+    getAllUsers, getUser,
     getUserByUsername, 
     createUser 
 } = require('../db/users');
@@ -45,8 +45,10 @@ usersRouter.post('/register', async (req, res, next) => {
     //       message: 'A user by that username already exists'
     //  });
       } else if(password.length < 8){
-        next({
-            password: "Password must be 8 characters"
+        res.send({
+            error: "Error",
+            message: "Password Too Short!",
+            name: "Name"
         });
       } else {
         const user = await createUser({
@@ -82,8 +84,10 @@ usersRouter.post('/register', async (req, res, next) => {
 // POST /api/users/login
 usersRouter.post('/login', async (req, res, next) => {
     console.log("Username & password", req.body);
-    const username = null;
-    const password  = null;
+    const {username, password} = req.body
+    
+    // const username = null;
+    // const password  = null;
     //request must have both
     if (!username || !password) {
       next({
@@ -93,20 +97,26 @@ usersRouter.post('/login', async (req, res, next) => {
     }
 
 try {
-    const user = await getUserByUsername(username, password);
-    const SALT_COUNT = 10;
-    const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
+    const user = await getUser({username, password});
+    if (!user) {
 
-console.log("Password comparisons", hashedPassword, password);
-    if (user && bcrypt.compare (hashedPassword, password)) {
-      const token = jwt.sign({id: user.id, username: username}, process.env.JWT_SECRET);
-      res.send({ message: "you're logged in!", token});
     } else {
-      next({
-        name: 'IncorrectCredentialsError',
-        message: 'Username or password is incorrect'
-      });
+        res.send ({message: "you're logged in!"});
     }
+    // const user = await getUserByUsername(username, password);
+    // const SALT_COUNT = 10;
+    // const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
+
+//console.log("Password comparisons", hashedPassword, password);
+    // if (user && bcrypt.compare (hashedPassword, password)) {
+    //   const token = jwt.sign({id: user.id, username: username}, process.env.JWT_SECRET);
+    //   res.send({ message: "you're logged in!", token});
+    // } else {
+    //   next({
+    //     name: 'IncorrectCredentialsError',
+    //     message: 'Username or password is incorrect'
+    //   });
+    // }
   } catch(error) {
     console.log(error);
     next(error);
