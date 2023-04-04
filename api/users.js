@@ -7,9 +7,10 @@ const usersRouter = express.Router();
 const jwt = require('jsonwebtoken');
 const {getPublicRoutinesByUser} = require ('../db/routines');
 const { 
-    getAllUsers, getUser,
+    getUser,
     getUserByUsername, 
-    createUser 
+    createUser,
+    getUserById 
 } = require('../db/users');
 //const { request } = require("../app");
 require('dotenv').config();
@@ -98,11 +99,22 @@ usersRouter.post('/login', async (req, res, next) => {
 
 try {
     const user = await getUser({username, password});
+    const token = jwt.sign({ 
+        id: user.id, 
+        username
+      },JWT_SECRET, {
+        expiresIn: '1w'
+      });
+    
     if (!user) {
-
+        next({
+            name: 'IncorrectCredentialsError',
+            message: 'Username or password is incorrect'
+        });
     } else {
-        res.send ({message: "you're logged in!"});
+        res.send ({user, message: "you're logged in!", token});
     }
+
     // const user = await getUserByUsername(username, password);
     // const SALT_COUNT = 10;
     // const hashedPassword = await bcrypt.hash(password, SALT_COUNT)
@@ -117,6 +129,8 @@ try {
     //     message: 'Username or password is incorrect'
     //   });
     // }
+
+    
   } catch(error) {
     console.log(error);
     next(error);
@@ -125,24 +139,69 @@ try {
 
 // GET /api/users/me
 
-usersRouter.get('/users', async (req, res, next) => {
-    const { username } = req.params;
-    try {
-     const token = jwt.sign({username}, process.env.JWT_SECRET);
-     const activeUser = await getAllUsers({token, username});
-     if (!token) {
-        next ({
-            message:"Invalid credentials"
-        })
-     } 
-     res.send({
-       activeUser
-     });
-    } catch (error){
-     console.log(error)
+usersRouter.get("/me", async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.status(401).send({
+        error: "401 - Unauthorized",
+        message: "You must be logged in to perform this action",
+        name: "UnauthorizedError",
+      });
     }
- 
- });
+  
+    try {
+      const token = authHeader.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded.id;
+      const user = await getUserById(userId);
+  
+      if (!user) {
+        res.status(404).send({
+          name: "user not found error",
+          message: "User not found.",
+        });
+      } else {
+        res.send({
+          id: user.id,
+          username: user.username,
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+
+// usersRouter.get('/me', async (req, res, next) => {
+//     console.log("testtesttest")
+//     const authHeader = req.headers.authorization
+//     const token = authHeader.split(" ")[1]
+//     try {
+//      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//      const userId = decoded.id
+//      const user = await getUserById (userId)
+//      console.log("token3", user)
+//      if (user){
+//         res.send({
+//             id: user.id,
+//             username: user.username
+//           });
+        
+//         } else { 
+        
+//           res.status(401).send(
+//             {
+//             error:"401 / Unauthorized", 
+//             name: "user not logged in error",
+//             message: "User not Found."
+//           });
+//      } 
+
+//     } catch ({name, message}){
+//        next ({name, message})
+     
+//     }
+//  });
+    
 
 // GET /api/users/:username/routines
 
