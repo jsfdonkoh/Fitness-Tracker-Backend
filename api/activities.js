@@ -56,11 +56,17 @@ router.get('/', async (req, res) => {
 
 // POST /api/activities*
 router.post('/', requireUser, async (req, res, next) => {
+    const authHeader = req.headers.authorization;
     const { name, description } = req.body;
     try {
+        const token = authHeader.split(" ")[1];
+        // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // const username = decoded.username;
         const activityName = await getActivityByName(name);
+        
+        //console.log("activityName3", activityName)
         if (activityName) {
-                next({
+                res.send({
                     name: 'NotFound',
                     message: `An activity with name ${name} already exists`
                   });

@@ -97,11 +97,14 @@ async function getAllRoutinesByUser({ username }) {
     FROM routines 
     JOIN users ON routines."creatorId" = users.Id
     WHERE username=$1
-    `,[username])
-    const result = attachActivitiesToRoutines(routines)
-    console.log("result", result)
+    AND "isPublic" = true
+    `,[username]) 
+    console.log("routines3", routines)
+    const result = await attachActivitiesToRoutines(routines)
+    // result.then(r => console.log("result", r))
     return result
   } catch(error){
+    console.log("error3", error)
     console.log("Get all routines by user")
   }
 }

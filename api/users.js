@@ -5,7 +5,7 @@ const usersRouter = express.Router();
 //const bcrypt = require('bcrypt');
 //jwt pulled from juicebox
 const jwt = require('jsonwebtoken');
-const {getPublicRoutinesByUser} = require ('../db/routines');
+const {getPublicRoutinesByUser, getAllPublicRoutines, getAllRoutinesByUser} = require ('../db/routines');
 const { 
     getUser,
     getUserByUsername, 
@@ -203,24 +203,34 @@ usersRouter.get("/me", async (req, res, next) => {
 //  });
     
 
-// GET /api/users/:username/routines
+// GET /api/users/:username/routines*
 
 usersRouter.get('/:username/routines', async (req, res, next) => {
-   const { username } = req.params;
+    const authHeader = req.headers.authorization;
     try {
- 
-     const userRoutines = await getPublicRoutinesByUser(username);
-    if (!username){
-        next({
-            message:"No public routines for this user"
-        })
+        const token = authHeader.split(" ")[1];
+        const currentUser = req.params.username;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const username = decoded.username;
+        const user = await getUserByUsername(username);
+        
+        console.log("Getting username + routine", user)
+        if (!user) {
+            res.send({
+                name: "No user found",
+                message: `Error finding user ${username}`
+            })
+        } 
+        else if (user.id === currentUser) { 
+            const routines = await getAllRoutinesByUser({username})
+            res.send(routines)
+        }
+    } catch (error) {
+        next (error)
+
     }
-     res.send({
-       userRoutines
-     });
-    } catch (error){
-     console.log(error)
-    }
- 
- });
+})
+
+
+  
 module.exports = usersRouter;

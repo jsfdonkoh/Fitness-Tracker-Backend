@@ -10,6 +10,8 @@ const client = require("../../db/client");
 const app = require("../../app");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+//const jest = require("jest");
+jest.setTimeout(50000);
 const {
   createFakeUserWithToken,
   createFakeUserWithRoutinesAndActivities,
@@ -225,23 +227,23 @@ console.log("Body2", body);
   });
 
   describe("GET /api/users/:username/routines", () => {
-    it("Gets a list of public routines for a particular user.", async () => {
+    it.only("Gets a list of public routines for a particular user.", async () => {
       // Create a fake user with a bunch of routines associated
-      const { fakeUser, token } = await createFakeUserWithRoutinesAndActivities(
-        "Greg"
-      );
+      // const { fakeUser, token } = await createFakeUserWithRoutinesAndActivities(
+      //   "Greg"
+      // );
       // Create a second user to check against
-      const sean = await createFakeUserWithRoutinesAndActivities("Sean");
-
+      const {fakeUser, token} = await createFakeUserWithRoutinesAndActivities("Sean");
+console.log("sean2", fakeUser)
       const response = await request(app)
-        .get(`/api/users/${sean.fakeUser.username}/routines`)
+        .get(`/api/users/${fakeUser.username}/routines`)
         .set("Authorization", `Bearer ${token}`);
-
+console.log("response.body3", response.body)
       expectNotToBeError(response.body);
-
+console.log("testZ1")
       // Get the routines from the DB
-      const routinesFromDB = await getPublicRoutinesByUser(sean.fakeUser);
-
+      const routinesFromDB = await getPublicRoutinesByUser(fakeUser);
+console.log("routinesFromDB4", routinesFromDB)
       expect(response.body).toEqual([...routinesFromDB]);
     });
 

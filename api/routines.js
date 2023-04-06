@@ -11,6 +11,7 @@ const { getRoutineById,
   createRoutine,
   updateRoutine,
   destroyRoutine } = require('../db');
+const usersRouter = require('./users');
 
 // GET /api/routines
 

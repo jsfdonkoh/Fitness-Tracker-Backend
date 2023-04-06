@@ -91,6 +91,7 @@ async function attachActivitiesToRoutines (routines) {
         const activitiesToAdd = activities.filter(activity => activity.routineId === routine.id);
         routine.activities = activitiesToAdd;
       }
+      console.log("routinesById4", routinesById)
       return routinesById;
     } catch(error){
       console.log("")
