@@ -221,7 +221,7 @@ usersRouter.get('/:username/routines', async (req, res, next) => {
                 message: `Error finding user ${username}`
             })
         } 
-        else if (user.id === currentUser) { 
+        else if (user.username === currentUser) { 
             const routines = await getAllRoutinesByUser({username})
             res.send(routines)
         }

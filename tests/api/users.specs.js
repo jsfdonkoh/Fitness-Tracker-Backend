@@ -227,7 +227,7 @@ console.log("Body2", body);
   });
 
   describe("GET /api/users/:username/routines", () => {
-    it.only("Gets a list of public routines for a particular user.", async () => {
+    it("Gets a list of public routines for a particular user.", async () => {
       // Create a fake user with a bunch of routines associated
       // const { fakeUser, token } = await createFakeUserWithRoutinesAndActivities(
       //   "Greg"

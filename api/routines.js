@@ -47,15 +47,26 @@ router.post('/', requireUser, async (req, res, next) => {
 
 // DELETE /api/routines/:routineId
 router.delete('/:routineId', requireUser, async (req, res, next ) => {
+    const authHeader = req.headers.authorization;
     const id = req.params.routineId;
     try {
-        const routine = await destroyRoutine(id);
+        const token = authHeader.split(" ")[1];
+        const currentUser = req.params.username;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const username = decoded.username;
+        // const routine = await destroyRoutine(id);
        //if statement that compares current user with creatorId - if !user = creatorId 
+       const routine = await getRoutineById(id);
+       if (routine.creatorId !=currentUser) {
         res.send(403);
         next ({
-            message:  `User ${user.username} is not allowed to delete ${routine.name}`,
+            message:  `User ${username} is not allowed to delete ${routine.name}`,
             name: "Unauthorized user"
         })
+       } else {
+        await destroyRoutine(routine.id)
+        res.send(routine)
+       }
     } catch ({ name, message}) {
         next({name, message});
     }
