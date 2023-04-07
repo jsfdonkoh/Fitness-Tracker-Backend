@@ -65,45 +65,72 @@ router.post('/', async (req, res, next) => {
 
 // PATCH /api/routines/:routineId
 
-router.patch('/:routineId', requireUser, async (req, res, next) => {
-    const { routineId } = req.params;
-    const { isPublic, name, goal } = req.body;
-    const creatorId = req.user.id;
-
-    try {
-      const routine = await getRoutineById(routineId);
-      if (routine.creatorId !== creatorId) {
-        return res.status(403).send({
-          error: 'User is not the creator of this routine',
-        });
-      }
-  
-      const updateFields = {
-        isPublic: isPublic,
-        name: name,
-        goal: goal,
-      };
-     
-      const updatedRoutine = await updateRoutine(routineId, updateFields);
-      res.send(updatedRoutine);
-    } catch (error) {
-      next(error);
+router.patch('/:routineId', async (req, res, next) => {
+  const { routineId } = req.params;
+  const { isPublic, name, goal } = req.body;
+ const authHeader = req.headers.authorization
+    if (!authHeader) {
+      res.send({
+        error: "Authenticated error",
+        message:"You must be logged in to perform this action",
+        name: "name error"
+      })
     }
-  });
-  
+  try {
+    const routine = await getRoutineById(routineId);
+    const token = authHeader.split(" ")[1]
+    const loggedInUser = jwt.verify(token, JWT_SECRET)
+    if (routine.creatorId !== loggedInUser.id) {
+      return res.status(403).send({
+        error: 'sdfgsdg',
+        message: `User ${loggedInUser.username} is not allowed to update ${routine.name}`,
+        name: 'dfgdsfg',
+      });
+    }
+    const updatedRoutine = await updateRoutine({
+      id: routineId,
+      isPublic,
+      name,
+      goal
+    });
+    res.send(updatedRoutine);
+  } catch (error) {
+    next(error);
+  }
+});
 
+//ORIGINAL 
 // router.patch('/:routineId', async (req, res, next) => {
-//     const { postId, isPublic, name, goal } = req.params;
-//     const { title, content, tags } = req.body;
-//     try {
-//         const updateFields = {};
-//         const updatedRoutine = await updateRoutine(updateFields)
-//         res.send(updatedRoutine)
+//     const { routineId } = req.params;
+//     const { isPublic, name, goal } = req.body;
+//     const creatorId = req.user.id;
+//     const authHeader = req.headers.authorization;
 
+//     try {
+//       if (!authHeader) {
+//         res.send({error: "you must be logged in to use this action"})
+//       }
+      
+//       const routine = await getRoutineById(routineId);
+//       if (routine.creatorId !== creatorId) {
+//         return res.status(403).send({
+//           error: 'User is not the creator of this routine',
+//         });
+//       }
+  
+//       const updateFields = {
+//         isPublic: isPublic,
+//         name: name,
+//         goal: goal,
+//       };
+     
+//       const updatedRoutine = await updateRoutine(routineId, updateFields);
+//       res.send(updatedRoutine);
 //     } catch (error) {
-//         next (error)
+//       next(error);
 //     }
-// }) 
+//   });
+  
 
 
 // DELETE /api/routines/:routineId
