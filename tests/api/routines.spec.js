@@ -7,6 +7,8 @@ require("dotenv").config();
 const request = require("supertest");
 const faker = require("faker");
 const app = require("../../app");
+const bodyParser = require('body-parser');
+app.use(bodyParser);
 const {
   createFakeUserWithToken,
   createFakeActivity,
@@ -78,7 +80,7 @@ describe("/api/routines", () => {
         .post("/api/routines")
         .set("Authorization", `Bearer ${token}`)
         .send(routineData);
-
+ console.log("response1", response.body)
       expectNotToBeError(response.body);
 
       expect(response.body).toEqual(expect.objectContaining(routineData));
