@@ -12,6 +12,8 @@ const { getRoutineById,
   updateRoutine,
   destroyRoutine } = require('../db');
 const usersRouter = require('./users');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = "neverTell"
 
 // GET /api/routines
 
@@ -65,19 +67,14 @@ router.post('/', async (req, res, next) => {
 
 // PATCH /api/routines/:routineId
 
-router.patch('/:routineId', async (req, res, next) => {
+router.patch('/:routineId', requireUser, async (req, res, next) => {
   const { routineId } = req.params;
   const { isPublic, name, goal } = req.body;
  const authHeader = req.headers.authorization
-    if (!authHeader) {
-      res.send({
-        error: "Authenticated error",
-        message:"You must be logged in to perform this action",
-        name: "name error"
-      })
-    }
+
   try {
     const routine = await getRoutineById(routineId);
+    console.log("routine6", routine)
     const token = authHeader.split(" ")[1]
     const loggedInUser = jwt.verify(token, JWT_SECRET)
     if (routine.creatorId !== loggedInUser.id) {
@@ -99,39 +96,6 @@ router.patch('/:routineId', async (req, res, next) => {
   }
 });
 
-//ORIGINAL 
-// router.patch('/:routineId', async (req, res, next) => {
-//     const { routineId } = req.params;
-//     const { isPublic, name, goal } = req.body;
-//     const creatorId = req.user.id;
-//     const authHeader = req.headers.authorization;
-
-//     try {
-//       if (!authHeader) {
-//         res.send({error: "you must be logged in to use this action"})
-//       }
-      
-//       const routine = await getRoutineById(routineId);
-//       if (routine.creatorId !== creatorId) {
-//         return res.status(403).send({
-//           error: 'User is not the creator of this routine',
-//         });
-//       }
-  
-//       const updateFields = {
-//         isPublic: isPublic,
-//         name: name,
-//         goal: goal,
-//       };
-     
-//       const updatedRoutine = await updateRoutine(routineId, updateFields);
-//       res.send(updatedRoutine);
-//     } catch (error) {
-//       next(error);
-//     }
-//   });
-  
-
 
 // DELETE /api/routines/:routineId
 router.delete('/:routineId', requireUser, async (req, res, next ) => {
@@ -139,16 +103,18 @@ router.delete('/:routineId', requireUser, async (req, res, next ) => {
     const id = req.params.routineId;
     try {
         const token = authHeader.split(" ")[1];
-        const currentUser = req.params.username;
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const username = decoded.username;
+        //const currentUser = req.params.username; this was undefined 
+        const currentUser = jwt.verify(token, process.env.JWT_SECRET);
+        const username = currentUser.username;
         // const routine = await destroyRoutine(id);
        //if statement that compares current user with creatorId - if !user = creatorId 
        const routine = await getRoutineById(id);
-       if (routine.creatorId !=currentUser) {
-        res.send(403);
-        next ({
-            message:  `User ${username} is not allowed to delete ${routine.name}`,
+      //  console.log("this is my routine creator id", routine.creatorId)
+      //  console.log("this is my currentUser", currentUser) this will help explain how we changed ln 114 to currentUser.id (remember apple vs. fruit basket analogy)
+       if (routine.creatorId !== currentUser.id) {
+        res.status(403).send ({
+            error: "Not allowed to delete routine",
+            message:`User ${username} is not allowed to delete ${routine.name}`,
             name: "Unauthorized user"
         })
        } else {
