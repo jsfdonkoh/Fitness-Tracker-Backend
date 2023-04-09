@@ -40,3 +40,4 @@ To run all the tests in watch mode (re-runs on code update), run
 
     npm run test:watch api
 # Fitness-Tracker-BE
+# Fitness-Tracker-BE
