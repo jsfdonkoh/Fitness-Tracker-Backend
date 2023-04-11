@@ -3,9 +3,10 @@ const app = express()
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-require("dotenv").config()
-const router = require("./api")
+require("dotenv").config();
+const {router} = require("./api/index");
 //app.use(express.json());
+
 
 
 // parse application/json
